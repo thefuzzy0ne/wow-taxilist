@@ -1,0 +1,8 @@
+package-as: TaxiList
+
+ignore:
+    - README.md
+
+manual-changelog: CHANGELOG.md
+
+license-output: LICENSE.txt
