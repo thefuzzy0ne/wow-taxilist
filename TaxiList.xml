@@ -1,0 +1,181 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+
+	<Button name="TaxiListButtonTemplate" virtual="true">
+		<Size x="222" y="40"/>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString inherits="GameFontNormal" justifyH="LEFT" justifyV="TOP" parentKey="text" wordwrap="true">
+					<Size>
+						<AbsDimension x="248" y="40"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="7" y="-4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<color r="1" g="1" b="1" />
+				</FontString>
+			</Layer>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentStripe" setAllPoints="true" file="Interface\GuildFrame\GuildFrame" parentKey="stripe">
+					<TexCoords left="0.36230469" right="0.38183594" top="0.95898438" bottom="0.99804688"/>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture name="$parentBarTexture" hidden="true" urgency="5" file="Interface\TargetingFrame\UI-StatusBar" parentKey="barTexture">
+					<Size x="10" y="20"/>
+					<Anchors>
+						<Anchor point="LEFT" x="60" y="0"/>
+					</Anchors>
+					<Color r="0" g="1" b="0" a="0.1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<HighlightTexture urgency="5" file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar" setAllPoints="true" alphaMode="ADD"/>
+		<Frames>
+			<Frame name="$parentMoneyFrame" inherits="SmallMoneyFrameTemplate">
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" x="8" y="6"/>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						SmallMoneyFrame_OnLoad(self);
+						MoneyFrame_SetType(self, "STATIC");
+					</OnLoad>
+				</Scripts>
+			</Frame>
+		</Frames>
+		<Layers>
+			<Layer layerLevel="BACKGROUND">
+				<FontString name="$parentFpName" inherits="GameFontNormal" parentKey="fpName">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="5" y="-5"/>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentZoneName" inherits="GameFontNormalSmall" parentKey="zoneName">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentFpName" relativePoint="BOTTOMLEFT" x="0" y="-5"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnClick>
+				if self.fpIdx then
+					TakeTaxiNode(self.fpIdx)
+				end
+			</OnClick>
+			<OnLoad>
+				self.zoneName:SetTextColor(0.8, 0.8, 0.8, 0.8)
+			</OnLoad>
+			<OnEnter>
+				TaxiList:HighlightFlightMapDestination(self)
+			</OnEnter>
+			<OnLeave>
+				TaxiList:UnhighlightFlightMapDestination()
+			</OnLeave>
+		</Scripts>
+	</Button>
+	
+	<Frame name="TaxiListFrame" hidden="false" toplevel="true" enableMouse="true" inherits="BasicFrameTemplateWithInset">
+		<Frames>
+			<ScrollFrame name="TaxiListContainer" inherits="HybridScrollFrameTemplate" parentKey="scrollFrame">
+				<Anchors>
+					<Anchor point="TOPLEFT" x="8" y="-28"/>
+					<Anchor point="BOTTOMRIGHT" x="-30" y="30"/>
+				</Anchors>
+				
+				<Frames>
+					<Slider name="$parentScrollBar" inherits="HybridScrollBarTemplate">
+						<Anchors>
+							<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="1" y="-14"/>
+							<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="1" y="12"/>
+						</Anchors>
+					</Slider>
+				</Frames>
+			</ScrollFrame>
+			<Button name="$parentClearButton" text="Clear" parentKey="clearButton">
+				<Size x="60" y="24"/>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT">
+						<Offset>
+							<AbsDimension x="-10" y="5"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						_G[self:GetParent():GetName().."EditBox"]:SetText("")
+					</OnClick>
+				</Scripts>
+				<NormalTexture file="Interface\Buttons\UI-DialogBox-Button-Up">
+					<TexCoords left="0.0" right="1.0" top="0.0" bottom="0.71875"/>
+				</NormalTexture>
+				<PushedTexture file="Interface\Buttons\UI-DialogBox-Button-Down">
+					<TexCoords left="0.0" right="1.0" top="0.0" bottom="0.71875"/>
+				</PushedTexture>
+				<DisabledTexture file="Interface\Buttons\UI-DialogBox-Button-Disabled">
+					<TexCoords left="0.0" right="1.0" top="0.0" bottom="0.71875"/>
+				</DisabledTexture>
+				<HighlightTexture file="Interface\Buttons\UI-DialogBox-Button-Highlight" alphaMode="ADD">
+					<TexCoords left="0.0" right="1.0" top="0.0" bottom="0.71875"/>
+				</HighlightTexture>
+				<NormalFont style="GameFontNormal"/>
+				<DisabledFont style="GameFontDisable"/>
+				<HighlightFont style="GameFontHighlight"/>
+			</Button>
+			<EditBox name="$parentEditBox" letters="50" inheirts="InputBoxTemplate" autoFocus="false" parentKey="filterText" bytes="26">
+				<Size y="32"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="TaxiListContainer" relativePoint="BOTTOMLEFT" x="7" y="3"/>
+					<Anchor point="BOTTOMLEFT"/>
+					<Anchor point="RIGHT" relativeTo="$parentClearButton" relativePoint="LEFT"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentLeft" file="Interface\ChatFrame\UI-ChatInputBorder-Left">
+							<Size y="32"/>
+							<Anchors>
+								<Anchor point="TOPLEFT" x="-10" />
+								<Anchor point="BOTTOMRIGHT" x="-20"/>
+							</Anchors>
+						</Texture>
+						<Texture name="$parentRight" file="Interface\ChatFrame\UI-ChatInputBorder-Right">
+							<Size y="32"/>
+							<Anchors>
+								<Anchor point="TOPLEFT" x="20" />
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEnterPressed>
+						self:ClearFocus()
+					</OnEnterPressed>
+					<OnEscapePressed>
+						self:ClearFocus()
+					</OnEscapePressed>
+					<!-- Added in Lua script
+					<OnTextChanged>
+						TaxiList.OnSearchTextChanged()
+					</OnTextChanged>
+				-->
+				</Scripts>
+				<FontString inherits="ChatFontNormal"/>
+			</EditBox>
+			
+		</Frames><!--
+		<Scripts>
+			<OnLoad>
+				TaxiListFrame_OnLoad(self);
+			</OnLoad>
+		</Scripts>
+	-->
+
+	</Frame>
+	<Script file="TaxiList.lua"/>
+</Ui>

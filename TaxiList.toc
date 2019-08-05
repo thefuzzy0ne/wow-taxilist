@@ -1,0 +1,7 @@
+## Interface: 80200
+## Title: Taxi List
+## Notes: Adds a scrollable list of flight points to the existing flight point picker
+## Author: Jrhartly (Azuremyst)
+## Version: 8.2.0.0
+
+TaxiList.xml
