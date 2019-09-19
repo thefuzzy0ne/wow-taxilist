@@ -1,89 +1,78 @@
 local addonName, shared = ...
 
-local addon = {}
-local frame = TaxiListFrame
+local addon = TaxiListFrame
+_G[addonName] = addon
 local flightPoints = {}
-local isSetup = false
 local taxiFrame
-
-
-addon.debug = true -- Enables debug messages and makes the addon global.
-
-frame:SetScript("OnEvent", function(this, event, ...) this[event](this, ...) end)
-frame:RegisterEvent("TAXIMAP_OPENED")
+local isInitialized = false
+local isWowClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 
 -------------------------------
-function frame:TAXIMAP_OPENED()
+function addon:TAXIMAP_OPENED()
 -------------------------------
-	addon.UpdateFlightPoints()
-	frame.filterText:SetText("")
-
-	if not isSetup then 
-		addon.DoSetup()
-	else
-		-- This gets called during setup.
-		addon.UpdateButtons() 
+	if not isInitialized then
+		self:InitializeFrame()
 	end
 
-	frame:Show()
-end
-
----------------------
-function addon.DoSetup()
----------------------
-	if isSetup then return end
-
-	isSetup = true
-	taxiFrame = FlightMapFrame
-
-	if addon.debug then
-		_G[addonName] = addon
-		addon.frame = frame
-	end
-
-	addon.InitializeFrame()
-	addon.InitializeScrollFrame()
-end
-
---------------------------------
-function addon.InitializeFrame()
---------------------------------
-	frame:SetPoint("TOPLEFT", taxiFrame, "TOPRIGHT")
-	frame:SetHeight(taxiFrame:GetHeight())
-	frame:SetWidth(262)
-	frame:SetParent(taxiFrame)
-
-	frame.CloseButton:SetScript("OnClick", function()
-		taxiFrame.BorderFrame.CloseButton:Click()
-		frame:Hide()
-	end)
-
-	frame.filterText:SetScript("OnTextChanged", addon.UpdateButtons)
+	self:UpdateFlightPoints()
+	self.filterText:SetText("")
+	self:UpdateButtons() 
+	self:Show()
 end
 
 --------------------------------------
-function addon.InitializeScrollFrame()
+function addon:InitializeScrollFrame()
 --------------------------------------
-	local scrollFrame = frame.scrollFrame
-	scrollFrame.update = addon.UpdateButtons
+	if isWowClassic then
+		self:SetPoint("TOPLEFT", taxiFrame, "TOPRIGHT", -34, -14)
+		self:SetPoint("BOTTOMLEFT", taxiFrame, "BOTTOMRIGHT", -34, 75)
+	end
+
+	local scrollFrame = self.scrollFrame
+	scrollFrame.update = function () self:UpdateButtons() end
 
 	HybridScrollFrame_CreateButtons(scrollFrame, "TaxiListButtonTemplate", 0, 0)
 	HybridScrollFrame_SetDoNotHideScrollBar(scrollFrame, true)
 end
 
-------------------------------------
-function addon.UpdateFlightPoints()
-------------------------------------
-	local numNodes = NumTaxiNodes();
+--------------------------------
+function addon:InitializeFrame()
+--------------------------------
+	isInitialized = true
+
+	taxiFrame = FlightMapFrame or TaxiFrame
+
+	self:SetPoint("TOPLEFT", taxiFrame, "TOPRIGHT")
+	self:SetHeight(taxiFrame:GetHeight())
+	self:SetWidth(262)
+	self:SetParent(taxiFrame)
+
+	self.CloseButton:SetScript("OnClick", function(self)
+		CloseTaxiMap()
+		self:Hide()
+	end)
+
+	self.filterText:SetScript("OnTextChanged", function() self:UpdateButtons() end)
+
+	self:InitializeScrollFrame()
+end
+
+-----------------------------------
+function addon:UpdateFlightPoints()
+-----------------------------------
 	table.wipe(flightPoints)
-	local fp, zn, fullName
-	for i = 1, numNodes do
+	local fp, zn, fullName, idx
+
+	for i = 1, NumTaxiNodes() do
 		if TaxiNodeGetType(i) == "REACHABLE" then
 			fullName = TaxiNodeName(i):gsub(", ", ",")
 			fp, zn = strsplit(",", fullName)
 			fp = fp or ""
 			zn = zn or ""
 			
+			idx = i
+			GetNumRoutes(i) -- Dummy call, without which the cost is unavailable.
+
 			tinsert(flightPoints, {
 				["fpIdx"] = i,
 				["zone"] = zn,
@@ -93,17 +82,18 @@ function addon.UpdateFlightPoints()
 			})
 		end
 	end
+
 	table.sort(flightPoints, function(a, b) return a["sortKey"]<b["sortKey"] end)
 end
 
---------------------------------------------------------
-function addon.GetFilteredResults()
---------------------------------------------------------
-	if not frame.filterText then
+-----------------------------------
+function addon:GetFilteredResults()
+-----------------------------------
+	if not self.filterText then
 		return flightPoints
 	end
 
-	local filterText = strlower(frame.filterText:GetText())
+	local filterText = strlower(self.filterText:GetText())
 	local filteredResults = {}
 
 	for _, flightPoint in ipairs(flightPoints) do
@@ -115,14 +105,14 @@ function addon.GetFilteredResults()
 	return filteredResults
 end
 
--------------------------------------
-function addon.UpdateButtons()
--------------------------------------
-	local scrollFrame = frame.scrollFrame
+------------------------------
+function addon:UpdateButtons()
+------------------------------
+	local scrollFrame = self.scrollFrame
 	local buttons = scrollFrame.buttons
 	local numButtons = #buttons
 	local button, flightPoint, index
-	local filteredResults = addon.GetFilteredResults()
+	local filteredResults = self:GetFilteredResults()
 	local displayedHeight = 0
 	local offset = HybridScrollFrame_GetOffset(scrollFrame)
 	local zoneName
@@ -147,6 +137,7 @@ function addon.UpdateButtons()
 			button:Hide()
 		end
 	end
+
 	local buttonHeight = buttons[1]:GetHeight()
 	local totalHeight = #filteredResults * buttonHeight
 	local displayedHeight = numButtons * buttonHeight
@@ -154,8 +145,10 @@ function addon.UpdateButtons()
 	HybridScrollFrame_Update(scrollFrame, totalHeight, displayedHeight)
 end
 
-function addon.GetGlow()
-	local glow = addon.glow
+------------------------
+function addon:GetGlow()
+------------------------
+	local glow = self.glow
 
 	if not glow then
 		glow = CreateFrame("Frame", nil, taxiFrame)
@@ -169,7 +162,7 @@ function addon.GetGlow()
 		glow.tex:SetAlpha(0.5)
 		glow.tex:SetAllPoints()
 
-		addon.glow = glow
+		self.glow = glow
 
 		local flasher = glow.tex:CreateAnimationGroup()
 		local fade1 = flasher:CreateAnimation("Alpha")
@@ -188,18 +181,54 @@ function addon.GetGlow()
 	return glow
 end
 
+----------------------------------------------------
 function addon:HighlightFlightMapDestination(button)
-	local destinationNodeId = button.fpIdx
-	local glow = addon.GetGlow()
+----------------------------------------------------
+	local glow = self:GetGlow()
 	glow.tex.flasher:Stop()
 	
-	local mapicon,pin
-	for pin,_ in pairs(taxiFrame.pinPools.FlightMap_FlightPointPinTemplate.activeObjects) do
-		local taxiNodeId = pin.taxiNodeData and pin.taxiNodeData.slotIndex
-		if taxiNodeId == destinationNodeId then 
-			mapicon = pin
+	local pinToHighlight = self:GetPinToHighlight(button.fpIdx)
 
-			glow:SetPoint("CENTER", mapicon, "CENTER", 6, -5)
+	glow:SetPoint("CENTER", pinToHighlight, "CENTER", 6, -5)
+	glow.tex.flasher:Play()
+	glow:Show()
+end
+
+------------------------------------------------------
+function addon:GetPinToHighlight(destinationNodeIndex)
+------------------------------------------------------
+	if FlightMapFrame then -- For Retail
+		for pin, _ in pairs(taxiFrame.pinPools.FlightMap_FlightPointPinTemplate.activeObjects) do
+			local taxiNodeSlotIndex = pin.taxiNodeData and pin.taxiNodeData.slotIndex
+			if taxiNodeSlotIndex == destinationNodeIndex then 
+				return pin
+			end
+		end
+
+		error("Unknown destination node index: "..destinationNodeIndex)
+	end
+
+	return _G["TaxiButton"..destinationNodeIndex] -- For Classic.
+	-- For him. For her. Obsession. Calvin Klein!
+end
+
+----------------------------------
+function addon:TakeTaxiNode(index)
+----------------------------------
+	TakeTaxiNode(index)
+end
+
+--------------------------------------------------
+function addon:HighLightTaxiMapDestination(button)
+--------------------------------------------------
+	local destinationNodeId = button.fpIdx
+	local glow = self:GetGlow()
+	glow.tex.flasher:Stop()
+
+	for i=1,NumTaxiNodes() do
+		if TaxiNodeGetType(i) == "REACHABLE" and i == destinationNodeId then
+			local mapIcon = _G["TaxiButton"..i]
+			glow:SetPoint("CENTER", mapIcon, "CENTER", 6, -5)
 			glow.tex.flasher:Play()
 			glow:Show()
 			return
@@ -207,7 +236,12 @@ function addon:HighlightFlightMapDestination(button)
 	end
 end
 
-function addon.UnhighlightFlightMapDestination()
-	if not addon.glow then return end
-	addon.glow:Hide()
+------------------------------------------------
+function addon:UnhighlightFlightMapDestination()
+------------------------------------------------
+	if not self.glow then return end
+	self.glow:Hide()
 end
+
+addon:SetScript("OnEvent", function(dum, dee, ...) dum[dee](dum, ...) end)
+addon:RegisterEvent("TAXIMAP_OPENED")
