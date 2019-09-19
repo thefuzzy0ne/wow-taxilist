@@ -64,9 +64,7 @@
 		</Layers>
 		<Scripts>
 			<OnClick>
-				if self.fpIdx then
-					TakeTaxiNode(self.fpIdx)
-				end
+				TaxiList:TakeTaxiNode(self.fpIdx)
 			</OnClick>
 			<OnLoad>
 				self.zoneName:SetTextColor(0.8, 0.8, 0.8, 0.8)
@@ -168,14 +166,6 @@
 				<FontString inherits="ChatFontNormal"/>
 			</EditBox>
 			
-		</Frames><!--
-		<Scripts>
-			<OnLoad>
-				TaxiListFrame_OnLoad(self);
-			</OnLoad>
-		</Scripts>
-	-->
-
+		</Frames>
 	</Frame>
-	<Script file="TaxiList.lua"/>
 </Ui>
