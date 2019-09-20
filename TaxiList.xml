@@ -25,7 +25,7 @@
 				</Texture>
 			</Layer>
 			<Layer level="BORDER">
-				<Texture name="$parentBarTexture" hidden="true" urgency="5" file="Interface\TargetingFrame\UI-StatusBar" parentKey="barTexture">
+				<Texture name="$parentBarTexture" hidden="true" file="Interface\TargetingFrame\UI-StatusBar" parentKey="barTexture">
 					<Size x="10" y="20"/>
 					<Anchors>
 						<Anchor point="LEFT" x="60" y="0"/>
@@ -34,7 +34,7 @@
 				</Texture>
 			</Layer>
 		</Layers>
-		<HighlightTexture urgency="5" file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar" setAllPoints="true" alphaMode="ADD"/>
+		<HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar" setAllPoints="true" alphaMode="ADD"/>
 		<Frames>
 			<Frame name="$parentMoneyFrame" inherits="SmallMoneyFrameTemplate">
 				<Anchors>
@@ -49,7 +49,7 @@
 			</Frame>
 		</Frames>
 		<Layers>
-			<Layer layerLevel="BACKGROUND">
+			<Layer level="BACKGROUND">
 				<FontString name="$parentFpName" inherits="GameFontNormal" parentKey="fpName">
 					<Anchors>
 						<Anchor point="TOPLEFT" x="5" y="-5"/>
@@ -125,7 +125,7 @@
 				<DisabledFont style="GameFontDisable"/>
 				<HighlightFont style="GameFontHighlight"/>
 			</Button>
-			<EditBox name="$parentEditBox" letters="50" inheirts="InputBoxTemplate" autoFocus="false" parentKey="filterText" bytes="26">
+			<EditBox name="$parentEditBox" letters="50" inherits="InputBoxTemplate" autoFocus="false" parentKey="filterText">
 				<Size y="32"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="TaxiListContainer" relativePoint="BOTTOMLEFT" x="7" y="3"/>

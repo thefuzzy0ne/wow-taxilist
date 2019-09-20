@@ -1,4 +1,4 @@
-local addonName, shared = ...
+local addonName = ...
 
 local addon = TaxiListFrame
 _G[addonName] = addon
@@ -61,7 +61,7 @@ end
 function addon:UpdateFlightPoints()
 -----------------------------------
 	table.wipe(flightPoints)
-	local fp, zn, fullName, idx
+	local fp, zn, fullName
 
 	for i = 1, NumTaxiNodes() do
 		if TaxiNodeGetType(i) == "REACHABLE" then
@@ -70,7 +70,6 @@ function addon:UpdateFlightPoints()
 			fp = fp or ""
 			zn = zn or ""
 			
-			idx = i
 			GetNumRoutes(i) -- Dummy call, without which the cost is unavailable.
 
 			tinsert(flightPoints, {
@@ -113,7 +112,6 @@ function addon:UpdateButtons()
 	local numButtons = #buttons
 	local button, flightPoint, index
 	local filteredResults = self:GetFilteredResults()
-	local displayedHeight = 0
 	local offset = HybridScrollFrame_GetOffset(scrollFrame)
 	local zoneName
 

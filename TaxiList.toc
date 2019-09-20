@@ -1,9 +1,11 @@
 ## Interface: 80200
 ## Globe: check-classic
 ## Title: Taxi List
-## Notes: Adds a scrollable list of flight points to the existing flight point picker
+## Notes: Adds a scrollable, searchable list of flight points to the existing taxi destination picker
 ## Author: Jrhartly (Azuremyst)
 ## Version: 8.2.0.1
+## DefaultState: Enabled
+## LoadOnDemand: 0
 
 TaxiList.xml
 TaxiList.lua
