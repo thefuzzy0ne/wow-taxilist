@@ -1,5 +1,10 @@
 # Change Log
 
+### [8.2.5.0] - 2019-09-18 Jrhartley, Azuremyst-EU ###
+
+**Changed**
+- Updated version number for WoW Patch
+
 ### [8.2.0.1] - 2019-09-18 Jrhartley, Azuremyst-EU ###
 
 **Added**
